@@ -25,6 +25,16 @@ public class Booking {
 	
 	@NonNull
 	private LocalDate endDate;
+		
+	public Booking() {
+		super();
+	}
+	
+	public Booking(String name, LocalDate startDate, LocalDate endDate) {
+		this.name = name;
+		this.startDate = startDate;
+		this.endDate = endDate;
+	}
 
 	public Long getId() {
 		return id;
@@ -73,6 +83,6 @@ public class Booking {
 			return false;
 		Booking other = (Booking) obj;
 		return Objects.equals(id, other.id);
-	}
+	}	
 	
 }

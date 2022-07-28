@@ -23,15 +23,14 @@ public class BookingController {
 	BookingService bookingService;
 
 	@GetMapping
-	public List<Booking> getBookingByDate(@RequestBody Booking booking) {
-		return bookingService.getBookingByDate(booking);
+	public List<Booking> checkBookingsByDate(@RequestBody Booking booking) {
+		return bookingService.checkBookingsByDate(booking);
 	}
 	
 	@GetMapping("/all")
 	public List<Booking> returnAllBookings() {
 		return bookingService.returnAllBookings();
-	}
-	
+	}	
 	
 	@PostMapping("/new")
 	@ResponseStatus(value = HttpStatus.CREATED)
@@ -41,7 +40,14 @@ public class BookingController {
 	
 	@PostMapping("/cancel/{id}")
 	@ResponseStatus(value = HttpStatus.ACCEPTED)
+	//ADICIONAR MAIS STATUS?
 	public void cancelBooking(@PathVariable String id) {
 		bookingService.cancelBooking(id);
+	}
+	
+	@PostMapping("/update/{id}")
+	@ResponseStatus(value = HttpStatus.ACCEPTED)
+	public Booking updateBooking(@PathVariable String id, @RequestBody Booking booking) {
+		return bookingService.updateBooking(id, booking);
 	}
 }
