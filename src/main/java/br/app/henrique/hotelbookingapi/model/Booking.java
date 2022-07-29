@@ -83,6 +83,11 @@ public class Booking {
 			return false;
 		Booking other = (Booking) obj;
 		return Objects.equals(id, other.id);
+	}
+
+	@Override
+	public String toString() {
+		return "Booking [id=" + id + ", name=" + name + ", startDate=" + startDate + ", endDate=" + endDate + "]";
 	}	
-	
+		
 }

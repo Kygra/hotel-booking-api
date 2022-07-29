@@ -18,7 +18,8 @@ public class BookingService {
 	BookingRepository bookingRepository;
 	
 	public List<Booking> checkBookingsByDate(Booking booking) {				
-		validateSearch(booking);
+		validateDatesNotNull(booking);
+		validateDateOrder(booking);
 
 		return bookingRepository.getBookingsByDate(booking.getStartDate(), booking.getEndDate());
 	}
@@ -28,7 +29,9 @@ public class BookingService {
 	}
 	
 	public Booking createBooking(Booking booking) {
-		validateCreate(booking);
+		validateDatesNotNull(booking);
+		validateDateOrder(booking);
+		validateHotelRules(booking);
 		
 		return bookingRepository.save(booking);
 	}
@@ -38,39 +41,36 @@ public class BookingService {
 	}
 	
 	public Booking updateBooking(String id, Booking bookingUpdates) {
-		// TODO Auto-generated method stub
-		//ACEITAR UPDATES PARCIAIS E TOTAIS
+		//This method allows partial and complete update of name and dates
 		
-		/*
-		Booking toBeUpdated = bookingRepository.getById(Long.valueOf(id));
+		Booking toBeUpdated = bookingRepository.getReferenceById(Long.valueOf(id));
 		
 		if(bookingUpdates.getName()!=null) toBeUpdated.setName(bookingUpdates.getName());
 		if(bookingUpdates.getStartDate()!=null) toBeUpdated.setStartDate(bookingUpdates.getStartDate());
 		if(bookingUpdates.getEndDate()!=null) toBeUpdated.setEndDate(bookingUpdates.getEndDate());
 		
-		//CHECAR SE ESTÁ DISPONÍVEL
-		
-		return toBeUpdated;
-		*/
-		
-		return bookingUpdates;
+		//validate booking after requested updates
+		validateDatesNotNull(toBeUpdated);
+		validateDateOrder(toBeUpdated);
+		validateHotelRules(toBeUpdated);
+
+		return bookingRepository.save(toBeUpdated);
 	}
 	
-	private void validateSearch(Booking booking) {
-		LocalDate startDate = booking.getStartDate();
-		LocalDate endDate = booking.getEndDate();
-		if(startDate==null || endDate==null) {
+	private void validateDatesNotNull(Booking booking) {
+		if(booking.getStartDate()==null || booking.getEndDate()==null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing values: startDate or endDate");
 		}
-		if(startDate.isAfter(endDate)) {
+	}
+	
+	private void validateDateOrder(Booking booking) {
+		if(booking.getStartDate().isAfter(booking.getEndDate())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate cannot be higher than endDate");
 		}
 	}
-	
-	private void validateCreate(Booking booking) {
-		validateSearch(booking);
 		
-		//ADICIONAR TODOS OS DEMAIS CHECKS, A SEREM USADOS PELO CREATE E PELO UPDATE
+	private void validateHotelRules(Booking booking) {
+		//TODO ADICIONAR TODOS OS DEMAIS CHECKS, A SEREM USADOS PELO CREATE E PELO UPDATE
 	}
 
 
