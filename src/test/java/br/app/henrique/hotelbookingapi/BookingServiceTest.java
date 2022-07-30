@@ -2,12 +2,14 @@ package br.app.henrique.hotelbookingapi;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +41,7 @@ class BookingServiceTest {
 		listOfBookings = new ArrayList<Booking>();
 		listOfBookings.add(new Booking ("Henrique", LocalDate.now().plusDays(1) , LocalDate.now().plusDays(4)));
 		listOfBookings.add(new Booking ("Romano", LocalDate.now().plusDays(5), LocalDate.now().plusDays(7)));	
-		booking =          new Booking ("Correia", LocalDate.now().plusDays(2), LocalDate.now().plusDays(5));
+		booking =          new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
 	}
 
 	
@@ -51,7 +53,7 @@ class BookingServiceTest {
 				
 	    //Execute
 		List<Booking> result = bookingService.checkBookingsByDate(
-				new Booking (null, LocalDate.now().plusDays(4), LocalDate.now().plusDays(6)));
+				new Booking ("Test", LocalDate.now().plusDays(4), LocalDate.now().plusDays(6)));
 		
 		//Validate
 		assertNotNull(result);
@@ -63,25 +65,25 @@ class BookingServiceTest {
 	void testCheckBookingsByDateWithNullStartDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.checkBookingsByDate(new Booking (null, null, LocalDate.now().plusDays(2)));
+	    	bookingService.checkBookingsByDate(new Booking ("Test", null, LocalDate.now().plusDays(2)));
 	    });
-	    assertTrue((exception.getMessage()).contains("Missing values: startDate or endDate"));
+	    assertTrue((exception.getMessage()).contains("Missing value: startDate"));
 	}
 	
 	@Test
 	void testCheckBookingsByDateWithNullEndDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.checkBookingsByDate(new Booking (null, LocalDate.now().plusDays(2), null));
+	    	bookingService.checkBookingsByDate(new Booking ("Test", LocalDate.now().plusDays(2), null));
 	    });
-	    assertTrue((exception.getMessage()).contains("Missing values: startDate or endDate"));
+	    assertTrue((exception.getMessage()).contains("Missing value: endDate"));
 	}
 	
 	@Test
 	void testCheckBookingsByDateWithStartDateIsHigherThanEndDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.checkBookingsByDate(new Booking (null, LocalDate.now().plusDays(2), LocalDate.now().plusDays(1)));
+	    	bookingService.checkBookingsByDate(new Booking ("Test", LocalDate.now().plusDays(2), LocalDate.now().plusDays(1)));
 	    });
 	    assertTrue((exception.getMessage()).contains("startDate cannot be higher than endDate"));
 	}
@@ -105,13 +107,13 @@ class BookingServiceTest {
 	@Test
 	void testCreateBookingWithEmptyBookingList() {
 		//Setup
-		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
-		Booking savedBooking = newBooking;
+		Booking savedBooking = booking;
 		savedBooking.setId(1l);
-		when(bookingService.createBooking(newBooking)).thenReturn(savedBooking);
-				
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(2))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.save(booking)).thenReturn(savedBooking);
+		
 	    //Execute
-		Booking result = bookingService.createBooking(newBooking);
+		Booking result = bookingService.createBooking(booking);
 		
 		//Validate
 		assertNotNull(result);
@@ -123,23 +125,39 @@ class BookingServiceTest {
 			
 	@Test
 	void testCreateBookingWithStartDateEqualAsEndDateOfExistingBooking() {
-		fail("Not yet implemented");
-	}	
-
-	@Test
-	void testCreateBookingHotelBusinessRules() {
-		fail("Not yet implemented");
+		//Setup
+		Booking existingBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
+		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(2), LocalDate.now().plusDays(4));
+		Booking savedBooking = newBooking;
+		savedBooking.setId(1l);
+		List<Booking> listOfExistingBookings = new ArrayList<Booking>();
+		listOfExistingBookings.add(existingBooking);
+		lenient().when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(4))).thenReturn(listOfExistingBookings);
+		lenient().when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(3), LocalDate.now().plusDays(4))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.save(newBooking)).thenReturn(savedBooking);
+		
+	    //Execute
+		Booking result = bookingService.createBooking(newBooking);
+		
+		//Validate
+		assertNotNull(result);
+		assertEquals(savedBooking.getName(), result.getName());
+		assertEquals(savedBooking.getStartDate(), result.getStartDate());
+		assertEquals(savedBooking.getEndDate(), result.getEndDate());
+		assertEquals(savedBooking.getId(), result.getId());
 	}	
 	
 	@Test
-	void testCreateBookingWith3DayStay() {		
+	void testCreateBookingWith3DayStay() {	
 		//Setup
-		Booking savedBooking = booking;
-		savedBooking.setId(1l);
-		when(bookingService.createBooking(booking)).thenReturn(savedBooking);
+		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(4));
+		Booking savedBooking = newBooking;
+		savedBooking.setId(1l);		
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(4))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.save(newBooking)).thenReturn(savedBooking);
 				
 	    //Execute
-		Booking result = bookingService.createBooking(booking);
+		Booking result = bookingService.createBooking(newBooking);
 		
 		//Validate
 		assertNotNull(result);
@@ -150,69 +168,119 @@ class BookingServiceTest {
 	}
 	
 	@Test
-	void testCreateBookingWithStartDate30DaysFromNow() {
-		fail("Not yet implemented");
-	}
+	void testCreateBookingWithStartDate30DaysFromNow() {	
+		//Setup
+		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(30), LocalDate.now().plusDays(33));
+		Booking savedBooking = newBooking;
+		savedBooking.setId(1l);		
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(31), LocalDate.now().plusDays(33))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.save(newBooking)).thenReturn(savedBooking);
+				
+	    //Execute
+		Booking result = bookingService.createBooking(newBooking);
 		
+		//Validate
+		assertNotNull(result);
+		assertEquals(savedBooking.getName(), result.getName());
+		assertEquals(savedBooking.getStartDate(), result.getStartDate());
+		assertEquals(savedBooking.getEndDate(), result.getEndDate());
+		assertEquals(savedBooking.getId(), result.getId());
+	}
+	
 	@Test
 	void testCreateBookingWithStartDateDuringExistingBookingShouldFail() {
-		fail("Not yet implemented");
+		//Setup
+		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(4));
+		List<Booking> listOfExistingBookings = new ArrayList<Booking>();
+		listOfExistingBookings.add(booking);		
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(4))).thenReturn(listOfBookings);
+		
+	    //Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(newBooking);
+	    });
+	    assertTrue((exception.getMessage()).contains("Dates chosen conflict with existing bookings"));
+	}
+	
+	@Test
+	void testCreateBookingWithNullNameShouldFail() {
+	    //Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(new Booking (null, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2)));
+	    });
+	    assertTrue((exception.getMessage()).contains("Missing value: name"));
 	}
 	
 	@Test
 	void testCreateBookingWithNullStartDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.createBooking(new Booking (null, null, LocalDate.now().plusDays(2)));
+	    	bookingService.createBooking(new Booking ("Test", null, LocalDate.now().plusDays(2)));
 	    });
-	    assertTrue((exception.getMessage()).contains("Missing values: startDate or endDate"));
+	    assertTrue((exception.getMessage()).contains("Missing value: startDate"));
 	}
 	
 	@Test
 	void testCreateBookingWithNullEndDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.createBooking(new Booking (null, LocalDate.now().plusDays(2), null));
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().plusDays(2), null));
 	    });
-	    assertTrue((exception.getMessage()).contains("Missing values: startDate or endDate"));
+	    assertTrue((exception.getMessage()).contains("Missing value: endDate"));
 	}
 	
 	@Test
 	void testCreateBookingWithStartDateIsHigherThanEndDateShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.createBooking(new Booking (null, LocalDate.now().plusDays(2), LocalDate.now().plusDays(1)));
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().plusDays(2), LocalDate.now().plusDays(1)));
 	    });
 	    assertTrue((exception.getMessage()).contains("startDate cannot be higher than endDate"));
 	}
 	
 	@Test
 	void testCreateBookingWithStartDateEqualAsEndDateShouldFail() {
-		fail("Not yet implemented");
+	    //Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().plusDays(2), LocalDate.now().plusDays(2)));
+	    });
+	    assertTrue((exception.getMessage()).contains("startDate cannot be same as endDate"));
 	}
 	
 	@Test
 	void testCreateBookingWithStartDateAsTodayShouldFail() {
-		fail("Not yet implemented");
+	    //Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now(), LocalDate.now().plusDays(2)));
+	    });
+	    assertTrue((exception.getMessage()).contains("startDate is invalid: Reservations start at least the next day of booking"));
 	}
 	
 	@Test
 	void testCreateBookingWithStartDateBeforeTodayShouldFail() {
-		fail("Not yet implemented");
+	    //Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().minusDays(1), LocalDate.now().plusDays(2)));
+	    });
+	    assertTrue((exception.getMessage()).contains("startDate is invalid: Reservations start at least the next day of booking"));
 	}
 	
 	@Test
 	void testCreateBookingWith4DayStayShouldFail() {
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.createBooking(new Booking ("Henrique", LocalDate.now().plusDays(1), LocalDate.now().plusDays(5)));
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().plusDays(1), LocalDate.now().plusDays(5)));
 	    });
 	    assertTrue((exception.getMessage()).contains("Stays cannot be longer than 3 days"));
 	}
-
+	
 	@Test
 	void testCreateBookingWithStartDate31DaysFromNowShouldFail() {
-		fail("Not yet implemented");
+		//Execute and validate
+	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
+	    	bookingService.createBooking(new Booking ("Test", LocalDate.now().plusDays(31), LocalDate.now().plusDays(33)));
+	    });
+	    assertTrue((exception.getMessage()).contains("Stays cannot be reserved more than 30 days in advance"));
 	}
 	
 	
@@ -254,7 +322,7 @@ class BookingServiceTest {
 		
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {
-	    	bookingService.updateBooking("1", new Booking (null, LocalDate.now().plusDays(3), LocalDate.now().plusDays(2)));
+	    	bookingService.updateBooking("1", new Booking ("Test", LocalDate.now().plusDays(3), LocalDate.now().plusDays(2)));
 	    });
 	    assertTrue((exception.getMessage()).contains("startDate cannot be higher than endDate"));
 	}

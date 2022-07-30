@@ -40,7 +40,6 @@ public class BookingController {
 	
 	@PostMapping("/cancel/{id}")
 	@ResponseStatus(value = HttpStatus.ACCEPTED)
-	//ADICIONAR MAIS STATUS?
 	public void cancelBooking(@PathVariable String id) {
 		bookingService.cancelBooking(id);
 	}

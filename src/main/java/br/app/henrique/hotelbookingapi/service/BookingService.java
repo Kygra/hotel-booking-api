@@ -1,5 +1,6 @@
 package br.app.henrique.hotelbookingapi.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,11 @@ public class BookingService {
 	}
 	
 	public Booking createBooking(Booking booking) {
+		validateNameNotNull(booking);
 		validateDatesNotNull(booking);
 		validateDateOrder(booking);
 		validateHotelRules(booking);
+		checkIfDatesAreAvailable(booking);
 		
 		return bookingRepository.save(booking);
 	}
@@ -40,7 +43,7 @@ public class BookingService {
 	}
 	
 	public Booking updateBooking(String id, Booking bookingUpdates) {
-		//This method allows partial and complete update of name and dates
+		//This method allows partial or complete update of name and dates
 		
 		Booking toBeUpdated = bookingRepository.getReferenceById(Long.valueOf(id));
 		
@@ -49,16 +52,35 @@ public class BookingService {
 		if(bookingUpdates.getEndDate()!=null) toBeUpdated.setEndDate(bookingUpdates.getEndDate());
 		
 		//validate booking after requested updates
+		validateNameNotNull(toBeUpdated);
 		validateDatesNotNull(toBeUpdated);
 		validateDateOrder(toBeUpdated);
 		validateHotelRules(toBeUpdated);
+		checkIfDatesAreAvailable(toBeUpdated);
 
 		return bookingRepository.save(toBeUpdated);
 	}
 	
+	private void checkIfDatesAreAvailable(Booking booking) {
+		//Reservations start at least the next day of booking
+		List<Booking> checkBooking = bookingRepository.getBookingsByDate(booking.getStartDate().plusDays(1), booking.getEndDate());
+		if(checkBooking.size()>0) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Dates chosen conflict with existing bookings for this room: " + checkBooking);
+		}
+	}
+	
+	private void validateNameNotNull(Booking booking) {
+		if(booking.getName()==null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing value: name");
+		}
+	}
+	
 	private void validateDatesNotNull(Booking booking) {
-		if(booking.getStartDate()==null || booking.getEndDate()==null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing values: startDate or endDate");
+		if(booking.getStartDate()==null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing value: startDate");
+		}
+		if(booking.getEndDate()==null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing value: endDate");
 		}
 	}
 	
@@ -69,11 +91,21 @@ public class BookingService {
 	}
 		
 	private void validateHotelRules(Booking booking) {
-		//TODO ADICIONAR TODOS OS DEMAIS CHECKS, A SEREM USADOS PELO CREATE E PELO UPDATE
 		if((booking.getEndDate().minusDays(3)).isAfter(booking.getStartDate())){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stays cannot be longer than 3 days");
 		}
+		if(booking.getStartDate().isAfter(LocalDate.now().plusDays(30l))){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stays cannot be reserved more than 30 days in advance");
+		}
+		if(booking.getStartDate().isEqual(booking.getEndDate())){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate cannot be same as endDate");
+		}
+		if(booking.getStartDate().isAfter(booking.getEndDate())){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate cannot be higher than endDate");
+		}
+		if(booking.getStartDate().isEqual(LocalDate.now()) || LocalDate.now().isAfter(booking.getStartDate())){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate is invalid: Reservations start at least the next day of booking");
+		}
 	}
-
 
 }
