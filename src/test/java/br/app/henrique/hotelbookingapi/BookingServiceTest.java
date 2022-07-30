@@ -45,7 +45,6 @@ class BookingServiceTest {
 	}
 
 	
-	
 	@Test
 	void testCheckBookingsByDate() {
 		//Setup
@@ -109,7 +108,7 @@ class BookingServiceTest {
 		//Setup
 		Booking savedBooking = booking;
 		savedBooking.setId(1l);
-		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(2))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(1))).thenReturn(Collections.<Booking>emptyList());
 		when(bookingRepository.save(booking)).thenReturn(savedBooking);
 		
 	    //Execute
@@ -153,7 +152,7 @@ class BookingServiceTest {
 		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(4));
 		Booking savedBooking = newBooking;
 		savedBooking.setId(1l);		
-		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(4))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(3))).thenReturn(Collections.<Booking>emptyList());
 		when(bookingRepository.save(newBooking)).thenReturn(savedBooking);
 				
 	    //Execute
@@ -173,7 +172,7 @@ class BookingServiceTest {
 		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(30), LocalDate.now().plusDays(33));
 		Booking savedBooking = newBooking;
 		savedBooking.setId(1l);		
-		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(31), LocalDate.now().plusDays(33))).thenReturn(Collections.<Booking>emptyList());
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(31), LocalDate.now().plusDays(32))).thenReturn(Collections.<Booking>emptyList());
 		when(bookingRepository.save(newBooking)).thenReturn(savedBooking);
 				
 	    //Execute
@@ -193,7 +192,7 @@ class BookingServiceTest {
 		Booking newBooking = new Booking ("Correia", LocalDate.now().plusDays(1), LocalDate.now().plusDays(4));
 		List<Booking> listOfExistingBookings = new ArrayList<Booking>();
 		listOfExistingBookings.add(booking);		
-		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(4))).thenReturn(listOfBookings);
+		when(bookingRepository.getBookingsByDate(LocalDate.now().plusDays(2), LocalDate.now().plusDays(3))).thenReturn(listOfBookings);
 		
 	    //Execute and validate
 	    Exception exception = assertThrows(ResponseStatusException.class, () -> {

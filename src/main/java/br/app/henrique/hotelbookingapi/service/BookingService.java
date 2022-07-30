@@ -45,8 +45,7 @@ public class BookingService {
 	public Booking updateBooking(String id, Booking bookingUpdates) {
 		//This method allows partial or complete update of name and dates
 		
-		Booking toBeUpdated = bookingRepository.getReferenceById(Long.valueOf(id));
-		
+		Booking toBeUpdated = bookingRepository.getReferenceById(Long.valueOf(id));		
 		if(bookingUpdates.getName()!=null) toBeUpdated.setName(bookingUpdates.getName());
 		if(bookingUpdates.getStartDate()!=null) toBeUpdated.setStartDate(bookingUpdates.getStartDate());
 		if(bookingUpdates.getEndDate()!=null) toBeUpdated.setEndDate(bookingUpdates.getEndDate());
@@ -56,14 +55,26 @@ public class BookingService {
 		validateDatesNotNull(toBeUpdated);
 		validateDateOrder(toBeUpdated);
 		validateHotelRules(toBeUpdated);
-		checkIfDatesAreAvailable(toBeUpdated);
+		checkIfDatesAreAvailableForUpdate(toBeUpdated);
 
 		return bookingRepository.save(toBeUpdated);
 	}
 	
 	private void checkIfDatesAreAvailable(Booking booking) {
 		//Reservations start at least the next day of booking
-		List<Booking> checkBooking = bookingRepository.getBookingsByDate(booking.getStartDate().plusDays(1), booking.getEndDate());
+		List<Booking> checkBooking = bookingRepository.getBookingsByDate(
+				booking.getStartDate().plusDays(1), booking.getEndDate().minusDays(1));
+		
+		if(checkBooking.size()>0) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Dates chosen conflict with existing bookings for this room: " + checkBooking);
+		}
+	}
+	
+	private void checkIfDatesAreAvailableForUpdate(Booking toBeUpdated) {		
+		//Reservations start at least the next day of booking
+		List<Booking> checkBooking = bookingRepository.getBookingsByDateIgnoringId(
+				toBeUpdated.getStartDate().plusDays(1), toBeUpdated.getEndDate().minusDays(1), toBeUpdated.getId());
+		
 		if(checkBooking.size()>0) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Dates chosen conflict with existing bookings for this room: " + checkBooking);
 		}

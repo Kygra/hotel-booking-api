@@ -30,7 +30,7 @@ public class BookingController {
 	@GetMapping("/all")
 	public List<Booking> returnAllBookings() {
 		return bookingService.returnAllBookings();
-	}	
+	}
 	
 	@PostMapping("/new")
 	@ResponseStatus(value = HttpStatus.CREATED)
