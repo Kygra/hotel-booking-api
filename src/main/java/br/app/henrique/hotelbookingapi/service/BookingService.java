@@ -1,6 +1,5 @@
 package br.app.henrique.hotelbookingapi.service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +70,9 @@ public class BookingService {
 		
 	private void validateHotelRules(Booking booking) {
 		//TODO ADICIONAR TODOS OS DEMAIS CHECKS, A SEREM USADOS PELO CREATE E PELO UPDATE
+		if((booking.getEndDate().minusDays(3)).isAfter(booking.getStartDate())){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stays cannot be longer than 3 days");
+		}
 	}
 
 
