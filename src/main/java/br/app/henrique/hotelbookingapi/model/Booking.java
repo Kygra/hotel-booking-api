@@ -69,8 +69,13 @@ public class Booking {
 	}
 
 	@Override
+	public String toString() {
+		return "Booking [id=" + id + ", name=" + name + ", startDate=" + startDate + ", endDate=" + endDate + "]";
+	}
+
+	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(endDate, id, name, startDate);
 	}
 
 	@Override
@@ -82,12 +87,8 @@ public class Booking {
 		if (getClass() != obj.getClass())
 			return false;
 		Booking other = (Booking) obj;
-		return Objects.equals(id, other.id);
-	}
-
-	@Override
-	public String toString() {
-		return "Booking [id=" + id + ", name=" + name + ", startDate=" + startDate + ", endDate=" + endDate + "]";
+		return Objects.equals(endDate, other.endDate) && Objects.equals(id, other.id)
+				&& Objects.equals(name, other.name) && Objects.equals(startDate, other.startDate);
 	}	
 		
 }

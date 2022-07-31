@@ -63,8 +63,8 @@ public class BookingService {
 	private void checkIfDatesAreAvailable(Booking booking) {
 		//Reservations start at least the next day of booking
 		List<Booking> checkBooking = bookingRepository.getBookingsByDate(
-				booking.getStartDate().plusDays(1), booking.getEndDate().minusDays(1));
-		
+				booking.getStartDate(), booking.getEndDate());
+		System.out.println("checkbooking: " + checkBooking);
 		if(checkBooking.size()>0) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Dates chosen conflict with existing bookings for this room: " + checkBooking);
 		}
@@ -73,8 +73,8 @@ public class BookingService {
 	private void checkIfDatesAreAvailableForUpdate(Booking toBeUpdated) {		
 		//Reservations start at least the next day of booking
 		List<Booking> checkBooking = bookingRepository.getBookingsByDateIgnoringId(
-				toBeUpdated.getStartDate().plusDays(1), toBeUpdated.getEndDate().minusDays(1), toBeUpdated.getId());
-		
+				toBeUpdated.getStartDate(), toBeUpdated.getEndDate(), toBeUpdated.getId());
+		System.out.println("checkbooking: " + checkBooking);
 		if(checkBooking.size()>0) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Dates chosen conflict with existing bookings for this room: " + checkBooking);
 		}
@@ -102,19 +102,16 @@ public class BookingService {
 	}
 		
 	private void validateHotelRules(Booking booking) {
-		if((booking.getEndDate().minusDays(3)).isAfter(booking.getStartDate())){
+		if((booking.getEndDate().minusDays(2)).isAfter(booking.getStartDate())){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stays cannot be longer than 3 days");
 		}
-		if(booking.getStartDate().isAfter(LocalDate.now().plusDays(30l))){
+		if(booking.getStartDate().isAfter(LocalDate.now().plusDays(30))){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stays cannot be reserved more than 30 days in advance");
-		}
-		if(booking.getStartDate().isEqual(booking.getEndDate())){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate cannot be same as endDate");
 		}
 		if(booking.getStartDate().isAfter(booking.getEndDate())){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate cannot be higher than endDate");
 		}
-		if(booking.getStartDate().isEqual(LocalDate.now()) || LocalDate.now().isAfter(booking.getStartDate())){
+		if(LocalDate.now().equals(booking.getStartDate()) || LocalDate.now().isAfter(booking.getStartDate())){
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "startDate is invalid: Reservations start at least the next day of booking");
 		}
 	}
