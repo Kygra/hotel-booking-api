@@ -22,7 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.app.henrique.hotelbookingapi.model.Booking;
 import br.app.henrique.hotelbookingapi.repository.BookingRepository;
-import br.app.henrique.hotelbookingapi.service.BookingService;
+import br.app.henrique.hotelbookingapi.service.impl.BookingServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
@@ -31,7 +31,7 @@ class BookingServiceTest {
 	BookingRepository bookingRepository;
 	
 	@InjectMocks
-	BookingService bookingService;
+	BookingServiceImpl bookingService;
 	
 	List<Booking> listOfBookings;
 	Booking booking;
