@@ -10,20 +10,26 @@ import javax.persistence.Id;
 
 import org.springframework.lang.NonNull;
 
+import io.swagger.annotations.ApiModelProperty;
+
 @Entity
 public class Booking {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@ApiModelProperty(required = false, hidden = true)
 	private Long id;
 	
 	@NonNull
+	@ApiModelProperty(notes = "Name of guest", example = "John Doe")
 	private String name;
 	
 	@NonNull
+	@ApiModelProperty(notes = "Start date for the booking", example = "2022-08-15")
 	private LocalDate startDate;
 	
 	@NonNull
+	@ApiModelProperty(notes = "End date for the booking", example = "2022-08-17")
 	private LocalDate endDate;
 		
 	public Booking() {
