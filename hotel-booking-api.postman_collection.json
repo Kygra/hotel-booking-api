@@ -26,11 +26,8 @@
 		},
 		{
 			"name": "Check Bookings by Date",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
@@ -42,13 +39,14 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/booking",
+					"raw": "localhost:8080/booking/check",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"booking"
+						"booking",
+						"check"
 					]
 				}
 			},
@@ -61,7 +59,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"Henrique\",\n    \"startDate\": \"2022-08-15\",\n    \"endDate\": \"2022-08-16\"\n}",
+					"raw": "{\n    \"name\": \"Henrique\",\n    \"startDate\": \"2022-08-05\",\n    \"endDate\": \"2022-08-07\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -109,7 +107,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"Henrique\",\n    \"startDate\": \"2022-08-20\",\n    \"endDate\": \"2022-08-22\"\n}",
+					"raw": "{\n    \"name\": \"Correia\",\n    \"startDate\": \"2022-08-09\",\n    \"endDate\": \"2022-08-10\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -117,7 +115,7 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/booking/update/1",
+					"raw": "localhost:8080/booking/update/2",
 					"host": [
 						"localhost"
 					],
@@ -125,7 +123,7 @@
 					"path": [
 						"booking",
 						"update",
-						"1"
+						"2"
 					]
 				}
 			},

@@ -27,7 +27,7 @@ public class BookingController {
 	@Autowired
 	BookingService bookingService;
 
-	@GetMapping
+	@PostMapping("/check")
 	@ApiOperation(value = "Check bookings within two dates", 
                   notes = "By passing startDate and endDate, the api returns all bookings within the dates.")
 	public List<Booking> checkBookingsByDate(@RequestBody Booking booking) {
